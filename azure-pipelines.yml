@@ -1,0 +1,34 @@
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: Terraform-Credentials  # Use the Azure DevOps variable group
+
+steps:
+  - task: TerraformInstaller@0
+    inputs:
+      terraformVersion: 'latest'
+
+  - script: |
+      terraform init
+    displayName: 'Terraform Init'
+    env:
+      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+
+  - script: |
+      terraform validate
+    displayName: 'Terraform Validate'
+
+  - script: |
+      terraform plan -out=tfplan
+    displayName: 'Terraform Plan'
+
+  - script: |
+      terraform apply -auto-approve "tfplan"
+    displayName: 'Terraform Apply'
